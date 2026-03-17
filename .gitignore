@@ -1,0 +1,10 @@
+# Node
+node_modules/
+
+# Build artifacts
+mcp/dist/
+app/dist/
+app/dist-electron/
+
+# Generated output (per-mod, derived from references)
+generated/

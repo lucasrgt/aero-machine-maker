@@ -1,0 +1,148 @@
+{
+  "name": "AlloyBlender",
+  "structType": "machine",
+  "dimensions": [
+    3,
+    3,
+    3
+  ],
+  "ioTypes": [
+    "energy",
+    "item"
+  ],
+  "capacity": {
+    "energy": 16000,
+    "fluid": 0,
+    "gas": 0
+  },
+  "processTime": 200,
+  "energyPerTick": 8,
+  "blockId": 213,
+  "defaultShellBlock": "iron_block",
+  "structure": [
+    {
+      "layer": 0,
+      "pattern": [
+        [
+          "R",
+          "R",
+          "R"
+        ],
+        [
+          "R",
+          "R",
+          "R"
+        ],
+        [
+          "R",
+          "R",
+          "R"
+        ]
+      ]
+    },
+    {
+      "layer": 1,
+      "pattern": [
+        [
+          "R",
+          "R",
+          "R"
+        ],
+        [
+          "R",
+          " ",
+          "R"
+        ],
+        [
+          "R",
+          "R",
+          "R"
+        ]
+      ]
+    },
+    {
+      "layer": 2,
+      "pattern": [
+        [
+          "R",
+          "R",
+          "R"
+        ],
+        [
+          "R",
+          "R",
+          "R"
+        ],
+        [
+          "R",
+          "R",
+          "R"
+        ]
+      ]
+    }
+  ],
+  "legend": {
+    " ": "air",
+    "R": "iron_block"
+  },
+  "portModes": {},
+  "guiComponents": [
+    {
+      "type": "slot",
+      "x": 47,
+      "y": 17,
+      "w": 18,
+      "h": 18,
+      "slotType": "input",
+      "ioMode": "input"
+    },
+    {
+      "type": "slot",
+      "x": 71,
+      "y": 17,
+      "w": 18,
+      "h": 18,
+      "slotType": "input",
+      "ioMode": "input"
+    },
+    {
+      "type": "slot",
+      "x": 59,
+      "y": 53,
+      "w": 18,
+      "h": 18,
+      "slotType": "fuel",
+      "ioMode": "input"
+    },
+    {
+      "type": "progress_arrow",
+      "x": 99,
+      "y": 35,
+      "w": 24,
+      "h": 17,
+      "slotType": null,
+      "ioMode": "display"
+    },
+    {
+      "type": "big_slot",
+      "x": 133,
+      "y": 30,
+      "w": 26,
+      "h": 26,
+      "slotType": "output",
+      "ioMode": "output"
+    }
+  ],
+  "registry": [
+    {
+      "id": "alloy_blender_ctrl",
+      "category": "controller",
+      "label": "AlloyBlender Controller",
+      "color": 6982250,
+      "char": "i",
+      "builtIn": false,
+      "mcId": 213,
+      "terrainIndex": 45
+    }
+  ]
+}

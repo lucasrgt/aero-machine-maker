@@ -1,0 +1,68 @@
+{
+  "mod_id": "vanilla",
+  "mod_name": "Vanilla",
+  "mc_version": "Beta 1.7.3",
+  "description": "Minecraft Beta 1.7.3 vanilla blocks.",
+  "blocks": {
+    "building": {
+      "bookshelf": { "label": "Bookshelf", "color": "0x755c3a", "meta": 47, "terrain_index": 35 },
+      "brick": { "label": "Brick", "color": "0x9b634a", "meta": 45, "terrain_index": 7 },
+      "double_stone_slab": { "label": "Double Stone Slab", "color": "0x7d7d7d", "meta": 43, "terrain_index": 6 },
+      "fence": { "label": "Fence", "color": "0xbc9862", "meta": 85, "terrain_index": 4 },
+      "glass": { "label": "Glass", "color": "0x88ddff", "meta": 20, "terrain_index": 49 },
+      "log": { "label": "Log", "color": "0x6b5130", "meta": 17, "terrain_index": 20 },
+      "mossy_cobblestone": { "label": "Mossy Cobblestone", "color": "0x677967", "meta": 48, "terrain_index": 36 },
+      "planks": { "label": "Planks", "color": "0xbc9862", "meta": 5, "terrain_index": 4 },
+      "sandstone": { "label": "Sandstone", "color": "0xd8cb8c", "meta": 24, "terrain_index": 192 },
+      "sponge": { "label": "Sponge", "color": "0xc3c33a", "meta": 19, "terrain_index": 48 },
+      "stone_slab": { "label": "Stone Slab", "color": "0x7d7d7d", "meta": 44, "terrain_index": 6 },
+      "wool": { "label": "Wool", "color": "0xe8e8e8", "meta": 35, "terrain_index": 64 }
+    },
+    "functional": {
+      "chest": { "label": "Chest", "color": "0xa0703c", "meta": 54, "terrain_index": 26 },
+      "crafting_table": { "label": "Crafting Table", "color": "0xb08b54", "meta": 58, "terrain_index": 59 },
+      "dispenser": { "label": "Dispenser", "color": "0x8a8a8a", "meta": 23, "terrain_index": 46 },
+      "furnace": { "label": "Furnace", "color": "0x8a8a8a", "meta": 61, "terrain_index": 45 },
+      "glowstone": { "label": "Glowstone", "color": "0xd9c477", "meta": 89, "terrain_index": 105 },
+      "jack_o_lantern": { "label": "Jack o'Lantern", "color": "0xe8a030", "meta": 91, "terrain_index": 102 },
+      "jukebox": { "label": "Jukebox", "color": "0x6b4632", "meta": 84, "terrain_index": 74 },
+      "lever": { "label": "Lever", "color": "0x7a7a7a", "meta": 69, "terrain_index": 96 },
+      "note_block": { "label": "Note Block", "color": "0x6b4632", "meta": 25, "terrain_index": 74 },
+      "pumpkin": { "label": "Pumpkin", "color": "0xc67a1a", "meta": 86, "terrain_index": 102 },
+      "redstone_torch": { "label": "Redstone Torch", "color": "0xff0000", "meta": 76, "terrain_index": 99 },
+      "tnt": { "label": "TNT", "color": "0xdb3b24", "meta": 46, "terrain_index": 8 }
+    },
+    "mineral_blocks": {
+      "diamond_block": { "label": "Diamond Block", "color": "0x6ee8e4", "meta": 57, "terrain_index": 24 },
+      "gold_block": { "label": "Gold Block", "color": "0xf5d900", "meta": 41, "terrain_index": 23 },
+      "iron_block": { "label": "Iron Block", "color": "0xc8c8c8", "meta": 42, "terrain_index": 22 },
+      "lapis_block": { "label": "Lapis Block", "color": "0x1e3a82", "meta": 22, "terrain_index": 144 }
+    },
+    "natural": {
+      "bedrock": { "label": "Bedrock", "color": "0x555555", "meta": 7, "terrain_index": 17 },
+      "clay": { "label": "Clay", "color": "0xa4a8b8", "meta": 82, "terrain_index": 72 },
+      "cobblestone": { "label": "Cobblestone", "color": "0x7a7a7a", "meta": 4, "terrain_index": 16 },
+      "dirt": { "label": "Dirt", "color": "0x866043", "meta": 3, "terrain_index": 2 },
+      "gravel": { "label": "Gravel", "color": "0x857b7b", "meta": 13, "terrain_index": 19 },
+      "ice": { "label": "Ice", "color": "0x7dadff", "meta": 79, "terrain_index": 67 },
+      "netherrack": { "label": "Netherrack", "color": "0x6f3535", "meta": 87, "terrain_index": 103 },
+      "obsidian": { "label": "Obsidian", "color": "0x1b1029", "meta": 49, "terrain_index": 37 },
+      "sand": { "label": "Sand", "color": "0xdbd3a0", "meta": 12, "terrain_index": 18 },
+      "snow_block": { "label": "Snow Block", "color": "0xf0fafa", "meta": 80, "terrain_index": 66 },
+      "soul_sand": { "label": "Soul Sand", "color": "0x5b4538", "meta": 88, "terrain_index": 104 },
+      "stone": { "label": "Stone", "color": "0x7d7d7d", "meta": 1, "terrain_index": 1 }
+    },
+    "ores": {
+      "diamond_ore": { "label": "Diamond Ore", "color": "0x818f8f", "meta": 56, "terrain_index": 50 },
+      "lapis_ore": { "label": "Lapis Ore", "color": "0x6b7fa0", "meta": 21, "terrain_index": 160 },
+      "ore_coal": { "label": "Coal Ore", "color": "0x737373", "meta": 16, "terrain_index": 34 },
+      "ore_gold": { "label": "Gold Ore", "color": "0x8f8258", "meta": 14, "terrain_index": 32 },
+      "ore_iron": { "label": "Iron Ore", "color": "0x87796d", "meta": 15, "terrain_index": 33 },
+      "redstone_ore": { "label": "Redstone Ore", "color": "0x8a6565", "meta": 73, "terrain_index": 51 }
+    },
+    "redstone": {
+      "piston": { "label": "Piston", "color": "0x9a8866", "meta": 33, "terrain_index": 107 },
+      "sticky_piston": { "label": "Sticky Piston", "color": "0x8aaa66", "meta": 29, "terrain_index": 106 }
+    }
+  }
+}

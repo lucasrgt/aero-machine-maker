@@ -1,0 +1,46 @@
+{
+  "mod_id": "ic2",
+  "mod_name": "IndustrialCraft 2",
+  "mc_version": "Beta 1.7.3",
+  "description": "IndustrialCraft 2 for Minecraft Beta 1.7.3 — industrial machines, energy (EU), and advanced materials.",
+  "blocks": {
+    "energy": {
+      "batbox": { "label": "BatBox", "color": "0x6b5130" },
+      "copper_cable": { "label": "Copper Cable", "color": "0xb87333" },
+      "glass_fibre_cable": { "label": "Glass Fibre Cable", "color": "0xdddddd" },
+      "gold_cable": { "label": "Gold Cable", "color": "0xf5d900" },
+      "hv_cable": { "label": "HV Cable", "color": "0x333333" },
+      "hv_transformer": { "label": "HV Transformer", "color": "0xb87333" },
+      "lv_transformer": { "label": "LV Transformer", "color": "0xb87333" },
+      "mfe": { "label": "MFE Unit", "color": "0xb87333" },
+      "mfsu": { "label": "MFSU", "color": "0xd0d0d0" },
+      "mv_transformer": { "label": "MV Transformer", "color": "0xb87333" },
+      "tin_cable": { "label": "Tin Cable", "color": "0x8c9fa0" }
+    },
+    "generation": {
+      "geothermal_generator": { "label": "Geothermal Generator", "color": "0x8b4513" },
+      "nuclear_reactor": { "label": "Nuclear Reactor", "color": "0x4a4a4a" },
+      "solar_panel": { "label": "Solar Panel", "color": "0x3355bb" },
+      "water_mill": { "label": "Water Mill", "color": "0x6688aa" },
+      "wind_mill": { "label": "Wind Mill", "color": "0xc8c8c8" }
+    },
+    "machines": {
+      "advanced_machine_block": { "label": "Advanced Machine Block", "color": "0xa8c8d8" },
+      "canning_machine": { "label": "Canning Machine", "color": "0xb0b0b0" },
+      "compressor": { "label": "Compressor", "color": "0xb0b0b0" },
+      "electric_furnace": { "label": "Electric Furnace", "color": "0xb0b0b0" },
+      "extractor": { "label": "Extractor", "color": "0xb0b0b0" },
+      "generator": { "label": "Generator", "color": "0xb0b0b0" },
+      "induction_furnace": { "label": "Induction Furnace", "color": "0xa0a8b8" },
+      "macerator": { "label": "Macerator", "color": "0xb0b0b0" },
+      "machine_block": { "label": "Machine Block", "color": "0xc8c8c8" },
+      "recycler": { "label": "Recycler", "color": "0xb0b0b0" }
+    },
+    "materials": {
+      "construction_foam": { "label": "Construction Foam", "color": "0xe8e0c8" },
+      "reinforced_glass": { "label": "Reinforced Glass", "color": "0x88ddff" },
+      "reinforced_stone": { "label": "Reinforced Stone", "color": "0x888888" },
+      "rubber_wood": { "label": "Rubber Wood", "color": "0x6b5130" }
+    }
+  }
+}

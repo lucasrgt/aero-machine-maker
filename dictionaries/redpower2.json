@@ -1,0 +1,92 @@
+{
+  "mod_id": "redpower2",
+  "mod_name": "RedPower 2",
+  "mc_version": "Beta 1.7.3",
+  "description": "RedPower 2 for Minecraft Beta 1.7.3 — Blutricity, pneumatic tubes, logic gates, and microblocks.",
+  "blocks": {
+    "machines": {
+      "blulectric_furnace": {
+        "label": "Blulectric Furnace",
+        "color": "0x6688cc"
+      },
+      "blulectric_alloy_furnace": {
+        "label": "Blulectric Alloy Furnace",
+        "color": "0x6688cc"
+      },
+      "block_breaker": {
+        "label": "Block Breaker",
+        "color": "0x7a7a7a"
+      },
+      "deployer": {
+        "label": "Deployer",
+        "color": "0x7a7a7a"
+      },
+      "filter": {
+        "label": "Filter",
+        "color": "0x7a7a7a"
+      },
+      "transposer": {
+        "label": "Transposer",
+        "color": "0x7a7a7a"
+      },
+      "sorting_machine": {
+        "label": "Sorting Machine",
+        "color": "0x7a7a7a"
+      },
+      "retriever": {
+        "label": "Retriever",
+        "color": "0x7a7a7a"
+      }
+    },
+    "energy": {
+      "blulectric_cable": {
+        "label": "Blue Alloy Wire",
+        "color": "0x4466cc"
+      },
+      "battery_box": {
+        "label": "Battery Box",
+        "color": "0x6688cc"
+      },
+      "solar_panel": {
+        "label": "Solar Panel (RP2)",
+        "color": "0x3355bb"
+      },
+      "thermopile": {
+        "label": "Thermopile",
+        "color": "0x7a7a7a"
+      }
+    },
+    "tubes": {
+      "pneumatic_tube": {
+        "label": "Pneumatic Tube",
+        "color": "0xcccccc"
+      },
+      "restriction_tube": {
+        "label": "Restriction Tube",
+        "color": "0xcc8844"
+      },
+      "magtubes": {
+        "label": "Magtube",
+        "color": "0x4466cc"
+      }
+    },
+    "materials": {
+      "basalt": {
+        "label": "Basalt",
+        "color": "0x3a3a3a"
+      },
+      "basalt_brick": {
+        "label": "Basalt Brick",
+        "color": "0x3a3a3a"
+      },
+      "marble": {
+        "label": "Marble",
+        "color": "0xe8e8e8"
+      },
+      "marble_brick": {
+        "label": "Marble Brick",
+        "color": "0xe0e0e0"
+      }
+    }
+  }
+}

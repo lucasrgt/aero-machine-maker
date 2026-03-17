@@ -1,0 +1,18 @@
+{
+  "mod_id": "ic2hm",
+  "mod_name": "IC2 Heavy Machinery",
+  "mc_version": "Beta 1.7.3",
+  "description": "IC2 Heavy Machinery addon — heavy-duty multiblock machines and advanced materials for IndustrialCraft 2.",
+  "blocks": {
+    "machines": {
+      "alloy_blender": { "label": "Alloy Blender", "color": "0xa0a8b8" },
+      "heavy_crusher_controller": { "label": "Heavy Crusher Controller", "color": "0x8a7070" }
+    },
+    "ores": {
+      "cinnabar_ore": { "label": "Cinnabar Ore", "color": "0x982018" },
+      "nickel_ore": { "label": "Nickel Ore", "color": "0xc8b880" },
+      "platinum_ore": { "label": "Platinum Ore", "color": "0xa8b0d8" },
+      "silver_ore": { "label": "Silver Ore", "color": "0xc8d0d8" }
+    }
+  }
+}

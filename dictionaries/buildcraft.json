@@ -1,0 +1,84 @@
+{
+  "mod_id": "buildcraft",
+  "mod_name": "BuildCraft",
+  "mc_version": "Beta 1.7.3",
+  "description": "BuildCraft for Minecraft Beta 1.7.3 — pipes, engines, quarry, and MJ energy.",
+  "blocks": {
+    "engines": {
+      "redstone_engine": {
+        "label": "Redstone Engine",
+        "color": "0xbc9862"
+      },
+      "steam_engine": {
+        "label": "Steam Engine",
+        "color": "0x7a7a7a"
+      },
+      "combustion_engine": {
+        "label": "Combustion Engine",
+        "color": "0xc8c8c8"
+      }
+    },
+    "machines": {
+      "quarry": {
+        "label": "Quarry",
+        "color": "0xc8c8c8"
+      },
+      "auto_crafting_table": {
+        "label": "Auto Crafting Table",
+        "color": "0xb08b54"
+      },
+      "mining_well": {
+        "label": "Mining Well",
+        "color": "0xc8c8c8"
+      },
+      "pump": {
+        "label": "Pump",
+        "color": "0xc8c8c8"
+      },
+      "refinery": {
+        "label": "Refinery",
+        "color": "0x888888"
+      },
+      "filler": {
+        "label": "Filler",
+        "color": "0xc8c8c8"
+      }
+    },
+    "pipes": {
+      "wooden_pipe": {
+        "label": "Wooden Transport Pipe",
+        "color": "0xbc9862"
+      },
+      "cobblestone_pipe": {
+        "label": "Cobblestone Transport Pipe",
+        "color": "0x7a7a7a"
+      },
+      "stone_pipe": {
+        "label": "Stone Transport Pipe",
+        "color": "0x9a9a9a"
+      },
+      "iron_pipe": {
+        "label": "Iron Transport Pipe",
+        "color": "0xc8c8c8"
+      },
+      "gold_pipe": {
+        "label": "Gold Transport Pipe",
+        "color": "0xf5d900"
+      },
+      "diamond_pipe": {
+        "label": "Diamond Transport Pipe",
+        "color": "0x6ee8e4"
+      },
+      "obsidian_pipe": {
+        "label": "Obsidian Transport Pipe",
+        "color": "0x1b1029"
+      }
+    },
+    "storage": {
+      "tank": {
+        "label": "Tank",
+        "color": "0x88ddff"
+      }
+    }
+  }
+}
