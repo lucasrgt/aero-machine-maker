@@ -844,7 +844,7 @@ ${slotCode}
         }
     }
 
-    public boolean isUsableByPlayer(EntityPlayer player) {
+    public boolean canInteractWith(EntityPlayer player) {
         return tile.canInteractWith(player);
     }
 
@@ -863,13 +863,16 @@ ${syncReceive}
         if (slot != null && slot.getHasStack()) {
             ItemStack slotStack = slot.getStack();
             result = slotStack.copy();
+            int prevSize = slotStack.stackSize;
             if (slotIndex < ${totalSlots}) {
-                if (!func_28125_a(slotStack, ${totalSlots}, ${totalSlots + 36}, true)) return null;
+                func_28125_a(slotStack, ${totalSlots}, ${totalSlots + 36}, true);
             } else {
-                if (!func_28125_a(slotStack, 0, ${inputSlots}, false)) return null;
+                func_28125_a(slotStack, 0, ${inputSlots}, false);
             }
+            if (slotStack.stackSize == prevSize) return null;
             if (slotStack.stackSize == 0) slot.putStack(null);
             else slot.onSlotChanged();
+            slot.onPickupFromSlot(slotStack);
         }
         return result;
     }

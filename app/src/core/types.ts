@@ -7,7 +7,7 @@ export type IOType = 'energy' | 'fluid' | 'gas' | 'item'
 export type SlotRole = 'input' | 'output' | 'fuel'
 export type IoMode = 'input' | 'output' | 'display'
 export type ArrowDirection = 'right' | 'left' | 'up' | 'down'
-export type GuiComponentType = 'slot' | 'big_slot' | 'energy_bar' | 'progress_arrow' | 'flame' | 'fluid_tank' | 'gas_tank' | 'fluid_tank_small' | 'gas_tank_small' | 'separator'
+export type GuiComponentType = 'slot' | 'big_slot' | 'energy_bar' | 'progress_arrow' | 'flame' | 'fluid_tank' | 'gas_tank' | 'fluid_tank_small' | 'gas_tank_small' | 'separator' | 'search_box' | 'search_box_light' | 'scrollbar' | 'scrollbar_tab' | 'scrollbar_tab_left'
 export type BlockCategory = 'mod' | 'vanilla' | 'custom'
 
 export interface BlockDef {
@@ -79,4 +79,9 @@ export const GUI_COMP_DEFS: Record<GuiComponentType, { w: number; h: number; lab
   fluid_tank_small: { w: 18, h: 27, label: 'Fluid S', resizable: true, ioMode: 'input' },
   gas_tank_small: { w: 18, h: 27, label: 'Gas S', resizable: true, ioMode: 'input' },
   separator: { w: 162, h: 2, label: 'Separator', resizable: true, ioMode: 'display' },
+  search_box: { w: 88, h: 12, label: 'Search Box', resizable: true, ioMode: 'display' },
+  search_box_light: { w: 88, h: 12, label: 'Search Light', resizable: true, ioMode: 'display' },
+  scrollbar: { w: 6, h: 108, label: 'Scrollbar', resizable: true, ioMode: 'display' },
+  scrollbar_tab: { w: 22, h: 108, label: 'Scroll Tab', resizable: true, ioMode: 'display' },
+  scrollbar_tab_left: { w: 22, h: 108, label: 'Scroll Tab L', resizable: true, ioMode: 'display' },
 }

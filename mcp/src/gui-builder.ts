@@ -90,37 +90,95 @@ class GuiBuilder {
   // PANEL - main GUI background with Minecraft 3D beveled border
   // =========================================================================
   panel(x: number, y: number, w: number, h: number): this {
-    // Fill background
-    this.fillRect(x + 3, y + 3, x + w - 4, y + h - 4, BG);
+    // Pixel-perfect MC Beta 1.7.3 GUI panel — extracted from furnace.png
+    //
+    // Legend from furnace.png pixel dump:
+    //   y=0: .. .. BK BK BK ... BK BK .. .. ..
+    //   y=1: .. BK WH WH WH ... WH WH BK .. ..
+    //   y=2: BK WH WH WH WH ... WH WH BG BK ..
+    //   y=3: BK WH WH WH BG ... BG DK DK BK
+    //   y=4: BK WH WH BG BG ... BG DK DK BK
+    //   ...
+    //   b-4: BK WH WH BG BG ... BG DK DK BK
+    //   b-3: .. BK BG DK DK ... DK DK DK BK
+    //   b-2: .. .. BK DK DK ... DK DK BK ..
+    //   b-1: .. .. .. BK BK ... BK BK .. ..
 
-    // Black outer border (1px, with rounded corners)
-    for (let px = x + 2; px < x + w - 2; px++) { this.putPixel(px, y, BK); }         // top
-    for (let px = x + 2; px < x + w - 2; px++) { this.putPixel(px, y + h - 1, BK); } // bottom
-    for (let py = y + 2; py < y + h - 2; py++) { this.putPixel(x, py, BK); }          // left
-    for (let py = y + 2; py < y + h - 2; py++) { this.putPixel(x + w - 1, py, BK); }  // right
-    // Corner pixels (diagonal)
+    const r = x + w - 1;  // right edge x
+    const b = y + h - 1;  // bottom edge y
+
+    // 1. Fill background (all interior)
+    this.fillRect(x + 4, y + 4, r - 4, b - 4, BG);
+
+    // 2. Row y+0: .. .. BK*all BK .. ..
+    for (let px = x + 2; px <= r - 3; px++) this.putPixel(px, y, BK);
+
+    // 3. Row y+1: .. BK WH*all BK ..
     this.putPixel(x + 1, y + 1, BK);
-    this.putPixel(x + w - 2, y + 1, BK);
-    this.putPixel(x + 1, y + h - 2, BK);
-    this.putPixel(x + w - 2, y + h - 2, BK);
+    for (let px = x + 2; px <= r - 3; px++) this.putPixel(px, y + 1, WH);
+    this.putPixel(r - 2, y + 1, BK);
 
-    // White highlight (top + left, 2px band)
-    for (let px = x + 2; px < x + w - 2; px++) { this.putPixel(px, y + 1, WH); this.putPixel(px, y + 2, WH); }
-    for (let py = y + 2; py < y + h - 2; py++) { this.putPixel(x + 1, py, WH); this.putPixel(x + 2, py, WH); }
+    // 4. Row y+2: BK WH WH*all BG BK
+    this.putPixel(x, y + 2, BK);
+    this.putPixel(x + 1, y + 2, WH);
+    for (let px = x + 2; px <= r - 4; px++) this.putPixel(px, y + 2, WH);
+    this.putPixel(r - 3, y + 2, WH);
+    this.putPixel(r - 2, y + 2, BG);
+    this.putPixel(r - 1, y + 2, BK);
+
+    // 5. Row y+3: BK WH WH WH BG... BG DK DK BK
+    this.putPixel(x, y + 3, BK);
+    this.putPixel(x + 1, y + 3, WH);
+    this.putPixel(x + 2, y + 3, WH);
     this.putPixel(x + 3, y + 3, WH);
+    for (let px = x + 4; px <= r - 3; px++) this.putPixel(px, y + 3, BG);
+    this.putPixel(r - 2, y + 3, DK);
+    this.putPixel(r - 1, y + 3, DK);
+    this.putPixel(r, y + 3, BK);
 
-    // Dark shadow (bottom + right, 2px band)
-    for (let px = x + 3; px < x + w - 2; px++) { this.putPixel(px, y + h - 2, DK); this.putPixel(px, y + h - 3, DK); }
-    for (let py = y + 3; py < y + h - 2; py++) { this.putPixel(x + w - 2, py, DK); this.putPixel(x + w - 3, py, DK); }
+    // 6. Rows y+4 to b-5: BK WH WH BG... BG DK DK BK
+    for (let py = y + 4; py <= b - 5; py++) {
+      this.putPixel(x, py, BK);
+      this.putPixel(x + 1, py, WH);
+      this.putPixel(x + 2, py, WH);
+      for (let px = x + 3; px <= r - 3; px++) this.putPixel(px, py, BG);
+      this.putPixel(r - 2, py, DK);
+      this.putPixel(r - 1, py, DK);
+      this.putPixel(r, py, BK);
+    }
 
-    // Fix corner transitions
-    this.putPixel(x + w - 3, y + 1, WH);
-    this.putPixel(x + w - 3, y + 2, WH);
-    this.putPixel(x + w - 2, y + 2, BG);
-    this.putPixel(x + 2, y + h - 3, BG);
-    this.putPixel(x + 1, y + h - 2, BK);
-    this.putPixel(x + 2, y + h - 2, BK);
-    this.putPixel(x + w - 2, y + h - 2, BK);
+    // 7. Row b-4: same as middle rows
+    this.putPixel(x, b - 4, BK);
+    this.putPixel(x + 1, b - 4, WH);
+    this.putPixel(x + 2, b - 4, WH);
+    for (let px = x + 3; px <= r - 3; px++) this.putPixel(px, b - 4, BG);
+    this.putPixel(r - 2, b - 4, DK);
+    this.putPixel(r - 1, b - 4, DK);
+    this.putPixel(r, b - 4, BK);
+
+    // 8. Row b-3: BK WH WH BG...BG DK DK DK BK  (furnace y=162)
+    this.putPixel(x, b - 3, BK);
+    this.putPixel(x + 1, b - 3, WH);
+    this.putPixel(x + 2, b - 3, WH);
+    for (let px = x + 3; px <= r - 4; px++) this.putPixel(px, b - 3, BG);
+    this.putPixel(r - 3, b - 3, DK);
+    this.putPixel(r - 2, b - 3, DK);
+    this.putPixel(r - 1, b - 3, DK);
+    this.putPixel(r, b - 3, BK);
+
+    // 9. Row b-2: .. BK BG DK...DK DK DK BK  (furnace y=163)
+    this.putPixel(x + 1, b - 2, BK);
+    this.putPixel(x + 2, b - 2, BG);
+    for (let px = x + 3; px <= r - 1; px++) this.putPixel(px, b - 2, DK);
+    this.putPixel(r, b - 2, BK);
+
+    // 10. Row b-1: .. .. BK DK...DK BK ..  (furnace y=164)
+    this.putPixel(x + 2, b - 1, BK);
+    for (let px = x + 3; px <= r - 2; px++) this.putPixel(px, b - 1, DK);
+    this.putPixel(r - 1, b - 1, BK);
+
+    // 11. Row b: .. .. .. BK...BK .. ..  (furnace y=165)
+    for (let px = x + 3; px <= r - 2; px++) this.putPixel(px, b, BK);
 
     return this;
   }
@@ -291,6 +349,194 @@ class GuiBuilder {
   }
 
   // =========================================================================
+  // SCROLLBAR TAB LEFT — external tab on the LEFT edge, right side open
+  // =========================================================================
+  scrollbarTabLeft(x: number, y: number, w: number, h: number, spriteX = 176): this {
+    const r = x + w - 1;
+    const b = y + h - 1;
+
+    // Same as furnace left corners, right edge open
+    // y+0: .. .. BK...BK ..
+    for (let px = x + 2; px <= r - 2; px++) this.putPixel(px, y, BK);
+    // y+1: .. BK WH...WH WH (extend 1px)
+    this.putPixel(x + 1, y + 1, BK);
+    for (let px = x + 2; px <= r - 1; px++) this.putPixel(px, y + 1, WH);
+    // y+2: BK WH WH...WH WH (extend 1px into panel)
+    this.putPixel(x, y + 2, BK);
+    for (let px = x + 1; px <= r; px++) this.putPixel(px, y + 2, WH);
+    // y+3: BK WH WH WH BG...BG BG (extend 1px)
+    this.putPixel(x, y + 3, BK);
+    this.putPixel(x + 1, y + 3, WH);
+    this.putPixel(x + 2, y + 3, WH);
+    this.putPixel(x + 3, y + 3, WH);
+    for (let px = x + 4; px <= r + 1; px++) this.putPixel(px, y + 3, BG);
+    // y+4 to b-4: BK WH WH BG...BG BG (extend 1px)
+    for (let py = y + 4; py <= b - 4; py++) {
+      this.putPixel(x, py, BK);
+      this.putPixel(x + 1, py, WH);
+      this.putPixel(x + 2, py, WH);
+      for (let px = x + 3; px <= r + 1; px++) this.putPixel(px, py, BG);
+    }
+    // b-3: BK WH WH BG...BG BG
+    this.putPixel(x, b - 3, BK);
+    this.putPixel(x + 1, b - 3, WH);
+    this.putPixel(x + 2, b - 3, WH);
+    for (let px = x + 3; px <= r + 1; px++) this.putPixel(px, b - 3, BG);
+    // b-2: .. BK BG DK...DK
+    this.putPixel(x + 1, b - 2, BK);
+    this.putPixel(x + 2, b - 2, BG);
+    for (let px = x + 3; px <= r - 1; px++) this.putPixel(px, b - 2, DK);
+    // b-1: .. .. BK DK...DK
+    this.putPixel(x + 2, b - 1, BK);
+    for (let px = x + 3; px <= r - 2; px++) this.putPixel(px, b - 1, DK);
+    // b: .. .. .. BK...BK
+    for (let px = x + 3; px <= r - 3; px++) this.putPixel(px, b, BK);
+
+    // Inner track
+    const trackX = x + 4;
+    const trackY = y + 4;
+    const trackW = w - 7;
+    const trackH = h - 8;
+    for (let px = trackX; px < trackX + trackW - 1; px++) this.putPixel(px, trackY, SD);
+    for (let py = trackY; py < trackY + trackH - 1; py++) this.putPixel(trackX, py, SD);
+    for (let px = trackX; px < trackX + trackW; px++) this.putPixel(px, trackY + trackH - 1, WH);
+    for (let py = trackY; py < trackY + trackH; py++) this.putPixel(trackX + trackW - 1, py, WH);
+    this.putPixel(trackX + trackW - 1, trackY, SL);
+    this.fillRect(trackX + 1, trackY + 1, trackX + trackW - 2, trackY + trackH - 2, SL);
+
+    // Thumb sprite
+    const thumbH = 15;
+    this.fillRect(spriteX, 0, spriteX + trackW - 1, thumbH - 1, BG);
+    for (let px = spriteX; px < spriteX + trackW; px++) this.putPixel(px, 0, WH);
+    for (let py = 0; py < thumbH; py++) this.putPixel(spriteX, py, WH);
+    for (let px = spriteX; px < spriteX + trackW; px++) this.putPixel(px, thumbH - 1, DK);
+    for (let py = 0; py < thumbH; py++) this.putPixel(spriteX + trackW - 1, py, DK);
+
+    return this;
+  }
+
+  // =========================================================================
+  // SEARCH BOX — inset text field with dark interior
+  // =========================================================================
+  searchBox(x: number, y: number, w: number, h = 12, light = false): this {
+    // Outer border (inset style, like slots)
+    for (let px = x; px < x + w - 1; px++) { this.putPixel(px, y, SD); }       // top (dark)
+    for (let py = y; py < y + h - 1; py++) { this.putPixel(x, py, SD); }       // left (dark)
+    for (let px = x; px < x + w; px++) { this.putPixel(px, y + h - 1, WH); }   // bottom (light)
+    for (let py = y; py < y + h; py++) { this.putPixel(x + w - 1, py, WH); }   // right (light)
+    this.putPixel(x + w - 1, y, SL);
+    // Interior
+    const interior: Color = light ? [96, 96, 96, 255] : BK;
+    this.fillRect(x + 1, y + 1, x + w - 2, y + h - 2, interior);
+    return this;
+  }
+
+  // =========================================================================
+  // SCROLLBAR — track with draggable thumb
+  // =========================================================================
+  scrollbar(x: number, y: number, w = 6, h = 108, spriteX = 176): this {
+    // Track (inset style)
+    for (let px = x; px < x + w - 1; px++) { this.putPixel(px, y, SD); }
+    for (let py = y; py < y + h - 1; py++) { this.putPixel(x, py, SD); }
+    for (let px = x; px < x + w; px++) { this.putPixel(px, y + h - 1, WH); }
+    for (let py = y; py < y + h; py++) { this.putPixel(x + w - 1, py, WH); }
+    this.putPixel(x + w - 1, y, SL);
+    this.fillRect(x + 1, y + 1, x + w - 2, y + h - 2, SL);
+
+    // Thumb sprite in sprite area (raised button, 15px tall)
+    const thumbH = 15;
+    const sy = y; // store at same Y as component in sprite area
+    // Thumb background
+    this.fillRect(spriteX, 0, spriteX + w - 1, thumbH - 1, BG);
+    // Thumb highlight (top + left)
+    for (let px = spriteX; px < spriteX + w; px++) { this.putPixel(px, 0, WH); }
+    for (let py = 0; py < thumbH; py++) { this.putPixel(spriteX, py, WH); }
+    // Thumb shadow (bottom + right)
+    for (let px = spriteX; px < spriteX + w; px++) { this.putPixel(px, thumbH - 1, DK); }
+    for (let py = 0; py < thumbH; py++) { this.putPixel(spriteX + w - 1, py, DK); }
+
+    return this;
+  }
+
+  // =========================================================================
+  // SCROLLBAR TAB — external tab-style scrollbar on the right edge
+  // Extends OUTSIDE the main panel, with MC 3D beveled border like RetroNism tabs
+  // =========================================================================
+  scrollbarTab(x: number, y: number, w: number, h: number, spriteX = 176): this {
+    // Pixel-perfect tab extending right from panel edge.
+    // Left edge open (merges with panel). Right side has furnace-style rounded corners.
+    // Uses same corner pattern as panel() but mirrored: no left border.
+    const r = x + w - 1;  // right edge
+    const b = y + h - 1;  // bottom edge
+
+    // Row y+0: .. .. BK...BK .. ..  (left edge transparent)
+    for (let px = x + 2; px <= r - 3; px++) this.putPixel(px, y, BK);
+
+    // Row y+1: .. WH...WH BK ..
+    for (let px = x + 1; px <= r - 3; px++) this.putPixel(px, y + 1, WH);
+    this.putPixel(r - 2, y + 1, BK);
+
+    // Row y+2: .. WH...WH BG BK
+    for (let px = x + 1; px <= r - 3; px++) this.putPixel(px, y + 2, WH);
+    this.putPixel(r - 2, y + 2, BG);
+    this.putPixel(r - 1, y + 2, BK);
+
+    // Row y+3: BG BG BG...BG DK DK BK
+    for (let px = x; px <= r - 3; px++) this.putPixel(px, y + 3, BG);
+    this.putPixel(r - 2, y + 3, DK);
+    this.putPixel(r - 1, y + 3, DK);
+    this.putPixel(r, y + 3, BK);
+
+    // Rows y+4 to b-4: BG BG...BG DK DK BK
+    for (let py = y + 4; py <= b - 4; py++) {
+      for (let px = x; px <= r - 3; px++) this.putPixel(px, py, BG);
+      this.putPixel(r - 2, py, DK);
+      this.putPixel(r - 1, py, DK);
+      this.putPixel(r, py, BK);
+    }
+
+    // Row b-3: BG BG...BG DK DK DK BK
+    for (let px = x; px <= r - 4; px++) this.putPixel(px, b - 3, BG);
+    this.putPixel(r - 3, b - 3, DK);
+    this.putPixel(r - 2, b - 3, DK);
+    this.putPixel(r - 1, b - 3, DK);
+    this.putPixel(r, b - 3, BK);
+
+    // Row b-2: .. DK...DK BK  (left edge transparent)
+    for (let px = x + 1; px <= r - 1; px++) this.putPixel(px, b - 2, DK);
+    this.putPixel(r, b - 2, BK);
+
+    // Row b-1: .. .. DK...DK BK
+    for (let px = x + 2; px <= r - 2; px++) this.putPixel(px, b - 1, DK);
+    this.putPixel(r - 1, b - 1, BK);
+
+    // Row b: .. .. .. BK...BK
+    for (let px = x + 3; px <= r - 2; px++) this.putPixel(px, b, BK);
+
+    // Inner track area
+    const trackX = x + 3;
+    const trackY = y + 4;
+    const trackW = w - 7;
+    const trackH = h - 8;
+    for (let px = trackX; px < trackX + trackW - 1; px++) this.putPixel(px, trackY, SD);
+    for (let py = trackY; py < trackY + trackH - 1; py++) this.putPixel(trackX, py, SD);
+    for (let px = trackX; px < trackX + trackW; px++) this.putPixel(px, trackY + trackH - 1, WH);
+    for (let py = trackY; py < trackY + trackH; py++) this.putPixel(trackX + trackW - 1, py, WH);
+    this.putPixel(trackX + trackW - 1, trackY, SL);
+    this.fillRect(trackX + 1, trackY + 1, trackX + trackW - 2, trackY + trackH - 2, SL);
+
+    // Thumb sprite in sprite area
+    const thumbH = 15;
+    this.fillRect(spriteX, 0, spriteX + trackW - 1, thumbH - 1, BG);
+    for (let px = spriteX; px < spriteX + trackW; px++) this.putPixel(px, 0, WH);
+    for (let py = 0; py < thumbH; py++) this.putPixel(spriteX, py, WH);
+    for (let px = spriteX; px < spriteX + trackW; px++) this.putPixel(px, thumbH - 1, DK);
+    for (let py = 0; py < thumbH; py++) this.putPixel(spriteX + trackW - 1, py, DK);
+
+    return this;
+  }
+
+  // =========================================================================
   // SEPARATOR
   // =========================================================================
   separator(x: number, y: number, w: number): this {
@@ -364,6 +610,21 @@ export function generateGuiTexture(
         break;
       case 'separator':
         gui.separator(comp.x, comp.y, comp.w);
+        break;
+      case 'search_box':
+        gui.searchBox(comp.x, comp.y, comp.w, comp.h, false);
+        break;
+      case 'search_box_light':
+        gui.searchBox(comp.x, comp.y, comp.w, comp.h, true);
+        break;
+      case 'scrollbar':
+        gui.scrollbar(comp.x, comp.y, comp.w, comp.h);
+        break;
+      case 'scrollbar_tab':
+        gui.scrollbarTab(comp.x, comp.y, comp.w, comp.h);
+        break;
+      case 'scrollbar_tab_left':
+        gui.scrollbarTabLeft(comp.x, comp.y, comp.w, comp.h);
         break;
     }
   }

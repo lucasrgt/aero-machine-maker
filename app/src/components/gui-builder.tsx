@@ -34,6 +34,7 @@ function rgb(c: Color) { return `rgb(${c[0]},${c[1]},${c[2]})` }
 const PALETTE_ITEMS: GuiComponentType[] = [
   'slot', 'big_slot', 'energy_bar', 'progress_arrow', 'flame',
   'fluid_tank', 'fluid_tank_small', 'gas_tank', 'gas_tank_small', 'separator',
+  'search_box', 'scrollbar', 'scrollbar_tab',
 ]
 
 // 7x7 pixel grids sampled from terrain.png / furnace.png
@@ -135,6 +136,54 @@ function PaletteIcon({ type }: { type: GuiComponentType }) {
         rect(0, 1, 11, 1, '#fff')
         break
       }
+      case 'search_box': {
+        // Dark inset box with cursor
+        rect(0, 0, 11, 7, '#373737')
+        rect(1, 1, 9, 5, '#000')
+        rect(2, 2, 1, 3, '#aaa') // text cursor
+        break
+      }
+      case 'search_box_light': {
+        rect(0, 0, 11, 7, '#373737')
+        rect(1, 1, 9, 5, '#606060')
+        rect(2, 2, 1, 3, '#fff')
+        break
+      }
+      case 'scrollbar': {
+        // Track with thumb
+        rect(0, 0, 5, 11, '#8b8b8b')
+        rect(0, 0, 5, 1, '#373737'); rect(0, 0, 1, 11, '#373737')
+        rect(0, 10, 5, 1, '#fff'); rect(4, 0, 1, 11, '#fff')
+        // Thumb
+        rect(0, 1, 5, 4, '#c6c6c6')
+        rect(0, 1, 5, 1, '#fff'); rect(0, 1, 1, 4, '#fff')
+        rect(0, 4, 5, 1, '#555'); rect(4, 1, 1, 4, '#555')
+        break
+      }
+      case 'scrollbar_tab': {
+        rect(0, 0, 9, 11, '#c6c6c6')
+        rect(2, 0, 7, 1, '#000'); rect(8, 2, 1, 7, '#000'); rect(2, 10, 7, 1, '#000')
+        px(1, 1, '#000'); px(8, 1, '#000'); px(1, 9, '#000'); px(8, 9, '#000')
+        rect(2, 1, 6, 1, '#fff')
+        rect(7, 2, 1, 7, '#555'); rect(2, 9, 6, 1, '#555')
+        rect(2, 3, 5, 5, '#8b8b8b')
+        rect(2, 3, 5, 3, '#c6c6c6')
+        rect(2, 3, 5, 1, '#fff')
+        rect(2, 5, 5, 1, '#555')
+        break
+      }
+      case 'scrollbar_tab_left': {
+        rect(0, 0, 9, 11, '#c6c6c6')
+        rect(0, 0, 7, 1, '#000'); rect(0, 2, 1, 7, '#000'); rect(0, 10, 7, 1, '#000')
+        px(7, 1, '#000'); px(0, 1, '#000'); px(7, 9, '#000'); px(0, 9, '#000')
+        rect(1, 1, 6, 1, '#fff')
+        rect(1, 2, 1, 7, '#fff'); rect(1, 9, 6, 1, '#555')
+        rect(2, 3, 5, 5, '#8b8b8b')
+        rect(2, 3, 5, 3, '#c6c6c6')
+        rect(2, 3, 5, 1, '#fff')
+        rect(2, 5, 5, 1, '#555')
+        break
+      }
     }
   }, [type])
 
@@ -144,6 +193,7 @@ function PaletteIcon({ type }: { type: GuiComponentType }) {
     fluid_tank: [7, 7], gas_tank: [7, 7],
     fluid_tank_small: [7, 7], gas_tank_small: [7, 7],
     separator: [11, 2],
+    search_box: [11, 7], search_box_light: [11, 7] as [number, number], scrollbar: [5, 11], scrollbar_tab: [9, 11], scrollbar_tab_left: [9, 11],
   }
   const [w, h] = sizes[type]
   return <canvas ref={ref} width={w * ICON_SCALE} height={h * ICON_SCALE}
@@ -156,11 +206,18 @@ const PALETTE_LABELS: Record<GuiComponentType, string> = {
   fluid_tank: 'Fluid', gas_tank: 'Gas',
   fluid_tank_small: 'Fluid S', gas_tank_small: 'Gas S',
   separator: 'Sep',
+  search_box: 'Search',
+  search_box_light: 'Search',
+  scrollbar: 'Scroll',
+  scrollbar_tab: 'Scroll Tab',
+  scrollbar_tab_left: 'Scroll Tab',
 }
 
 export function GuiBuilder() {
   const canvasRef = useRef<HTMLCanvasElement>(null)
+  const containerRef = useRef<HTMLDivElement>(null)
   const dragging = useRef<{ index: number; offsetX: number; offsetY: number } | null>(null)
+  const panning = useRef<{ startX: number; startY: number; startPanX: number; startPanY: number } | null>(null)
 
   const components = useStore((s) => s.guiComponents)
   const selectedCompIndex = useStore((s) => s.selectedCompIndex)
@@ -169,6 +226,13 @@ export function GuiBuilder() {
   const GUI_W = useStore((s) => s.guiWidth || DEFAULT_GUI_W)
   const GUI_H = useStore((s) => s.guiHeight || DEFAULT_GUI_H)
   const [fontReady, setFontReady] = useState(false)
+  const [zoom, setZoom] = useState(SCALE)
+  const [panX, setPanX] = useState(0)
+  const [panY, setPanY] = useState(0)
+
+  // Extra canvas margin for out-of-bounds components
+  const MARGIN = 40
+  const spaceHeld = useRef(false)
 
   useEffect(() => {
     const face = new FontFace('Monocraft', `url(${mcFontUrl})`)
@@ -182,14 +246,22 @@ export function GuiBuilder() {
   const render = useCallback(() => {
     const canvas = canvasRef.current
     if (!canvas) return
+    const totalW = (GUI_W + MARGIN * 2) * zoom
+    const totalH = (GUI_H + MARGIN * 2) * zoom
+    canvas.width = totalW
+    canvas.height = totalH
     const ctx = canvas.getContext('2d')!
     ctx.imageSmoothingEnabled = false
 
     ctx.fillStyle = '#0a0a1a'
     ctx.fillRect(0, 0, canvas.width, canvas.height)
 
+    // Offset all drawing by MARGIN so panel is centered with room for external components
+    ctx.save()
+    ctx.translate(MARGIN * zoom, MARGIN * zoom)
+
     // Panel
-    const s = SCALE
+    const s = zoom
     const fill = (x: number, y: number, w: number, h: number, c: Color) => {
       ctx.fillStyle = rgb(c); ctx.fillRect(x * s, y * s, w * s, h * s)
     }
@@ -197,18 +269,34 @@ export function GuiBuilder() {
     const vLine = (x: number, y: number, len: number, c: Color) => fill(x, y, 1, len, c)
     const pixel = (x: number, y: number, c: Color) => fill(x, y, 1, 1, c)
 
-    // Background
-    fill(3, 3, GUI_W - 6, GUI_H - 6, MC.BG)
-    // Borders
-    hLine(2, 0, GUI_W - 4, MC.BK); hLine(2, GUI_H - 1, GUI_W - 4, MC.BK)
-    vLine(0, 2, GUI_H - 4, MC.BK); vLine(GUI_W - 1, 2, GUI_H - 4, MC.BK)
-    pixel(1, 1, MC.BK); pixel(GUI_W - 2, 1, MC.BK); pixel(1, GUI_H - 2, MC.BK); pixel(GUI_W - 2, GUI_H - 2, MC.BK)
-    // Highlights
-    hLine(2, 1, GUI_W - 4, MC.WH); hLine(2, 2, GUI_W - 4, MC.WH)
-    vLine(1, 2, GUI_H - 4, MC.WH); vLine(2, 2, GUI_H - 4, MC.WH)
-    // Shadows
-    hLine(3, GUI_H - 2, GUI_W - 5, MC.DK); hLine(3, GUI_H - 3, GUI_W - 5, MC.DK)
-    vLine(GUI_W - 2, 3, GUI_H - 5, MC.DK); vLine(GUI_W - 3, 3, GUI_H - 5, MC.DK)
+    // Panel — pixel-perfect MC Beta 1.7.3 (matched row-by-row from furnace.png)
+    const R = GUI_W - 1, B = GUI_H - 1
+    // Background fill
+    fill(4, 4, GUI_W - 8, GUI_H - 8, MC.BG)
+    // Row 0: .. .. BK...BK .. ..
+    hLine(2, 0, R - 4, MC.BK)
+    // Row 1: .. BK WH...WH BK ..
+    pixel(1, 1, MC.BK); hLine(2, 1, R - 4, MC.WH); pixel(R - 2, 1, MC.BK)
+    // Row 2: BK WH WH...WH BG BK
+    pixel(0, 2, MC.BK); pixel(1, 2, MC.WH); hLine(2, 2, R - 5, MC.WH); pixel(R - 3, 2, MC.WH); pixel(R - 2, 2, MC.BG); pixel(R - 1, 2, MC.BK)
+    // Row 3: BK WH WH WH BG...BG DK DK BK
+    pixel(0, 3, MC.BK); pixel(1, 3, MC.WH); pixel(2, 3, MC.WH); pixel(3, 3, MC.WH); hLine(4, 3, R - 6, MC.BG); pixel(R - 2, 3, MC.DK); pixel(R - 1, 3, MC.DK); pixel(R, 3, MC.BK)
+    // Rows 4 to B-5: BK WH WH BG...BG DK DK BK
+    for (let py = 4; py <= B - 5; py++) {
+      pixel(0, py, MC.BK); pixel(1, py, MC.WH); pixel(2, py, MC.WH)
+      hLine(3, py, R - 5, MC.BG)
+      pixel(R - 2, py, MC.DK); pixel(R - 1, py, MC.DK); pixel(R, py, MC.BK)
+    }
+    // Row B-4: same as middle
+    pixel(0, B-4, MC.BK); pixel(1, B-4, MC.WH); pixel(2, B-4, MC.WH); hLine(3, B-4, R - 5, MC.BG); pixel(R-2, B-4, MC.DK); pixel(R-1, B-4, MC.DK); pixel(R, B-4, MC.BK)
+    // Row B-3: BK WH WH BG...BG DK DK DK BK
+    pixel(0, B-3, MC.BK); pixel(1, B-3, MC.WH); pixel(2, B-3, MC.WH); hLine(3, B-3, R - 6, MC.BG); pixel(R-3, B-3, MC.DK); pixel(R-2, B-3, MC.DK); pixel(R-1, B-3, MC.DK); pixel(R, B-3, MC.BK)
+    // Row B-2: .. BK BG DK...DK BK
+    pixel(1, B-2, MC.BK); pixel(2, B-2, MC.BG); hLine(3, B-2, R - 3, MC.DK); pixel(R, B-2, MC.BK)
+    // Row B-1: .. .. BK DK...DK BK ..
+    pixel(2, B-1, MC.BK); hLine(3, B-1, R - 4, MC.DK); pixel(R-1, B-1, MC.BK)
+    // Row B: .. .. .. BK...BK .. ..
+    hLine(3, B, R - 4, MC.BK)
 
     // Grid
     if (snapEnabled && gridSize > 1) {
@@ -347,6 +435,112 @@ export function GuiBuilder() {
           hLine(comp.x, comp.y, comp.w, MC.SD)
           hLine(comp.x, comp.y + 1, comp.w, MC.WH)
           break
+        case 'search_box': {
+          const bx = comp.x, by = comp.y, bw = comp.w, bh = comp.h
+          hLine(bx, by, bw - 1, MC.SD); vLine(bx, by, bh - 1, MC.SD)
+          hLine(bx, by + bh - 1, bw, MC.WH); vLine(bx + bw - 1, by, bh, MC.WH)
+          pixel(bx + bw - 1, by, MC.SL)
+          fill(bx + 1, by + 1, bw - 2, bh - 2, MC.BK)
+          ctx.fillStyle = '#666'; ctx.font = `${7 * s}px Monocraft, Consolas`; ctx.fillText('Search...', (bx + 3) * s, (by + 2) * s)
+          break
+        }
+        case 'search_box_light': {
+          const bx2 = comp.x, by2 = comp.y, bw2 = comp.w, bh2 = comp.h
+          hLine(bx2, by2, bw2 - 1, MC.SD); vLine(bx2, by2, bh2 - 1, MC.SD)
+          hLine(bx2, by2 + bh2 - 1, bw2, MC.WH); vLine(bx2 + bw2 - 1, by2, bh2, MC.WH)
+          pixel(bx2 + bw2 - 1, by2, MC.SL)
+          fill(bx2 + 1, by2 + 1, bw2 - 2, bh2 - 2, [96, 96, 96] as Color)
+          ctx.fillStyle = '#fff'; ctx.font = `${7 * s}px Monocraft, Consolas`; ctx.fillText('Search...', (bx2 + 3) * s, (by2 + 2) * s)
+          break
+        }
+        case 'scrollbar': {
+          const sx = comp.x, sy = comp.y, sw = comp.w, sh = comp.h
+          hLine(sx, sy, sw - 1, MC.SD); vLine(sx, sy, sh - 1, MC.SD)
+          hLine(sx, sy + sh - 1, sw, MC.WH); vLine(sx + sw - 1, sy, sh, MC.WH)
+          pixel(sx + sw - 1, sy, MC.SL)
+          fill(sx + 1, sy + 1, sw - 2, sh - 2, MC.SL)
+          const thumbH = 15
+          fill(sx, sy, sw, thumbH, MC.BG)
+          hLine(sx, sy, sw, MC.WH); vLine(sx, sy, thumbH, MC.WH)
+          hLine(sx, sy + thumbH - 1, sw, MC.DK); vLine(sx + sw - 1, sy, thumbH, MC.DK)
+          ctx.fillStyle = '#888'; ctx.font = `bold ${6 * s}px Consolas`; ctx.fillText('↕', sx * s, (sy - 4) * s)
+          break
+        }
+        case 'scrollbar_tab': {
+          // Pixel-perfect tab — right side has furnace corners, left edge fully open
+          const tx = comp.x, ty = comp.y, tw = comp.w, th = comp.h
+          const tr = tx + tw - 1, tb = ty + th - 1
+          // Row ty+0: .. .. BK...BK .. ..  (top border, no left pixels)
+          hLine(tx + 2, ty, tr - tx - 4, MC.BK)
+          // Row ty+1: .. WH...WH BK ..
+          hLine(tx + 1, ty + 1, tr - tx - 3, MC.WH); pixel(tr - 2, ty + 1, MC.BK)
+          // Row ty+2: .. WH...WH BG BK
+          hLine(tx + 1, ty + 2, tr - tx - 3, MC.WH); pixel(tr - 2, ty + 2, MC.BG); pixel(tr - 1, ty + 2, MC.BK)
+          // Row ty+3: BG BG...BG DK DK BK
+          hLine(tx, ty + 3, tr - tx - 2, MC.BG); pixel(tr - 2, ty + 3, MC.DK); pixel(tr - 1, ty + 3, MC.DK); pixel(tr, ty + 3, MC.BK)
+          // Rows ty+4 to tb-4: BG...BG DK DK BK
+          for (let py = ty + 4; py <= tb - 4; py++) {
+            hLine(tx, py, tr - tx - 2, MC.BG); pixel(tr - 2, py, MC.DK); pixel(tr - 1, py, MC.DK); pixel(tr, py, MC.BK)
+          }
+          // Row tb-3: BG...BG DK DK DK BK
+          hLine(tx, tb - 3, tr - tx - 3, MC.BG); pixel(tr - 3, tb - 3, MC.DK); pixel(tr - 2, tb - 3, MC.DK); pixel(tr - 1, tb - 3, MC.DK); pixel(tr, tb - 3, MC.BK)
+          // Row tb-2: .. DK...DK BK  (no left pixels)
+          hLine(tx + 1, tb - 2, tr - tx - 1, MC.DK); pixel(tr, tb - 2, MC.BK)
+          // Row tb-1: .. .. DK...DK BK
+          hLine(tx + 2, tb - 1, tr - tx - 3, MC.DK); pixel(tr - 1, tb - 1, MC.BK)
+          // Row tb: .. .. .. BK...BK
+          hLine(tx + 3, tb, tr - tx - 4, MC.BK)
+          // Inner track
+          const itx = tx + 3, ity = ty + 4, itw = tw - 7, ith = th - 8
+          hLine(itx, ity, itw - 1, MC.SD); vLine(itx, ity, ith - 1, MC.SD)
+          hLine(itx, ity + ith - 1, itw, MC.WH); vLine(itx + itw - 1, ity, ith, MC.WH)
+          pixel(itx + itw - 1, ity, MC.SL)
+          fill(itx + 1, ity + 1, itw - 2, ith - 2, MC.SL)
+          // Thumb
+          const tth = 15
+          fill(itx, ity, itw, tth, MC.BG)
+          hLine(itx, ity, itw, MC.WH); vLine(itx, ity, tth, MC.WH)
+          hLine(itx, ity + tth - 1, itw, MC.DK); vLine(itx + itw - 1, ity, tth, MC.DK)
+          ctx.fillStyle = '#888'; ctx.font = `bold ${6 * s}px Consolas`; ctx.fillText('TAB↕', tx * s, (ty - 4) * s)
+          break
+        }
+        case 'scrollbar_tab_left': {
+          // Left-side tab — same as furnace left corners, right edge open
+          const lx = comp.x, ly = comp.y, lw = comp.w, lh = comp.h
+          const lr = lx + lw - 1, lb = ly + lh - 1
+          // y+0: .. .. BK...BK ..
+          hLine(lx + 2, ly, lw - 4, MC.BK)
+          // y+1: .. BK WH...WH WH (extend 1px WH to close corner)
+          pixel(lx + 1, ly + 1, MC.BK); hLine(lx + 2, ly + 1, lw - 3, MC.WH)
+          // y+2: BK WH WH...WH WH (extend 1px into panel to cover white border)
+          pixel(lx, ly + 2, MC.BK); hLine(lx + 1, ly + 2, lw - 2, MC.WH)
+          // y+3: BK WH WH WH BG...BG BG (extend 1px BG to cover gap)
+          pixel(lx, ly + 3, MC.BK); pixel(lx + 1, ly + 3, MC.WH); pixel(lx + 2, ly + 3, MC.WH); pixel(lx + 3, ly + 3, MC.WH); hLine(lx + 4, ly + 3, lw - 3, MC.BG)
+          // y+4 to b-4: BK WH WH BG...BG
+          for (let py = ly + 4; py <= lb - 4; py++) {
+            pixel(lx, py, MC.BK); pixel(lx + 1, py, MC.WH); pixel(lx + 2, py, MC.WH); hLine(lx + 3, py, lw - 3, MC.BG)
+          }
+          // b-3: BK WH WH BG...BG
+          pixel(lx, lb - 3, MC.BK); pixel(lx + 1, lb - 3, MC.WH); pixel(lx + 2, lb - 3, MC.WH); hLine(lx + 3, lb - 3, lw - 3, MC.BG)
+          // b-2: .. BK BG DK...DK
+          pixel(lx + 1, lb - 2, MC.BK); pixel(lx + 2, lb - 2, MC.BG); hLine(lx + 3, lb - 2, lw - 4, MC.DK)
+          // b-1: .. .. BK DK...DK
+          pixel(lx + 2, lb - 1, MC.BK); hLine(lx + 3, lb - 1, lw - 5, MC.DK)
+          // b: .. .. .. BK...BK
+          hLine(lx + 3, lb, lw - 5, MC.BK)
+          // Inner track
+          const lix = lx + 4, liy = ly + 4, liw = lw - 7, lih = lh - 8
+          hLine(lix, liy, liw - 1, MC.SD); vLine(lix, liy, lih - 1, MC.SD)
+          hLine(lix, liy + lih - 1, liw, MC.WH); vLine(lix + liw - 1, liy, lih, MC.WH)
+          pixel(lix + liw - 1, liy, MC.SL)
+          fill(lix + 1, liy + 1, liw - 2, lih - 2, MC.SL)
+          const lth = 15
+          fill(lix, liy, liw, lth, MC.BG)
+          hLine(lix, liy, liw, MC.WH); vLine(lix, liy, lth, MC.WH)
+          hLine(lix, liy + lth - 1, liw, MC.DK); vLine(lix + liw - 1, liy, lth, MC.DK)
+          ctx.fillStyle = '#888'; ctx.font = `bold ${6 * s}px Consolas`; ctx.fillText('←TAB', lx * s, (ly - 4) * s)
+          break
+        }
       }
 
       if (selected) {
@@ -357,7 +551,8 @@ export function GuiBuilder() {
         ctx.setLineDash([])
       }
     }
-  }, [components, selectedCompIndex, snapEnabled, gridSize, fontReady, GUI_W, GUI_H])
+    ctx.restore()
+  }, [components, selectedCompIndex, snapEnabled, gridSize, fontReady, GUI_W, GUI_H, zoom])
 
   useEffect(() => { render() }, [render])
 
@@ -368,30 +563,31 @@ export function GuiBuilder() {
 
     function toGui(e: MouseEvent) {
       const rect = canvas!.getBoundingClientRect()
-      const s = useStore.getState()
-      const gw = s.guiWidth || DEFAULT_GUI_W
-      const gh = s.guiHeight || DEFAULT_GUI_H
-      const x = (e.clientX - rect.left) / SCALE
-      const y = (e.clientY - rect.top) / SCALE
-      if (x < 0 || x >= gw || y < 0 || y >= gh) return null
-      return { x, y }
+      const x = (e.clientX - rect.left) / zoom - MARGIN
+      const y = (e.clientY - rect.top) / zoom - MARGIN
+      return { x: Math.floor(x), y: Math.floor(y) }
     }
 
     function snapVal(v: number) {
       const s = useStore.getState()
-      if (!s.snapEnabled || s.gridSize <= 1) return Math.round(v)
+      if (!s.snapEnabled || s.gridSize <= 1) return v
       return Math.round(v / s.gridSize) * s.gridSize
     }
 
     function onMouseDown(e: MouseEvent) {
+      // Middle mouse button or Space+click → pan
+      if (e.button === 1 || spaceHeld.current) {
+        e.preventDefault()
+        panning.current = { startX: e.clientX, startY: e.clientY, startPanX: panX, startPanY: panY }
+        return
+      }
       const pos = toGui(e)
-      if (!pos) return
       const comps = useStore.getState().guiComponents
       for (let i = comps.length - 1; i >= 0; i--) {
         const c = comps[i]
         if (pos.x >= c.x && pos.x < c.x + c.w && pos.y >= c.y && pos.y < c.y + c.h) {
           useStore.getState().setSelectedComp(i)
-          dragging.current = { index: i, offsetX: pos.x - c.x, offsetY: pos.y - c.y }
+          dragging.current = { index: i, offsetX: Math.floor(pos.x - c.x), offsetY: Math.floor(pos.y - c.y) }
           return
         }
       }
@@ -399,23 +595,39 @@ export function GuiBuilder() {
     }
 
     function onMouseMove(e: MouseEvent) {
+      // Safety: if no buttons are pressed, cancel any active drag/pan
+      if (e.buttons === 0) {
+        dragging.current = null
+        panning.current = null
+        return
+      }
+      // Handle panning
+      if (panning.current) {
+        const dx = e.clientX - panning.current.startX
+        const dy = e.clientY - panning.current.startY
+        setPanX(panning.current.startPanX + dx)
+        setPanY(panning.current.startPanY + dy)
+        return
+      }
       if (!dragging.current) return
       const pos = toGui(e)
-      if (!pos) return
       const comp = useStore.getState().guiComponents[dragging.current.index]
       if (!comp) return
       const nx = snapVal(pos.x - dragging.current.offsetX)
       const ny = snapVal(pos.y - dragging.current.offsetY)
-      const s = useStore.getState()
-      const gw = s.guiWidth || DEFAULT_GUI_W
-      const gh = s.guiHeight || DEFAULT_GUI_H
-      useStore.getState().updateGuiComponent(dragging.current.index, {
-        x: Math.max(3, Math.min(gw - comp.w - 3, nx)),
-        y: Math.max(3, Math.min(gh - comp.h - 3, ny)),
-      })
+      // No boundary clamping — components can go outside the panel
+      useStore.getState().updateGuiComponent(dragging.current.index, { x: nx, y: ny })
     }
 
-    function onMouseUp() { dragging.current = null }
+    function onMouseUp() { dragging.current = null; panning.current = null }
+
+    function onWheel(e: WheelEvent) {
+      e.preventDefault()
+      setZoom((prev) => {
+        const delta = e.deltaY > 0 ? -0.5 : 0.5
+        return Math.max(1, Math.min(6, prev + delta))
+      })
+    }
 
     function onContextMenu(e: MouseEvent) {
       e.preventDefault()
@@ -443,22 +655,42 @@ export function GuiBuilder() {
       useStore.getState().addGuiComponent(type, Math.round(pos.x - def.w / 2), Math.round(pos.y - def.h / 2))
     }
 
+    function onKeyDown(e: KeyboardEvent) {
+      if (e.code === 'Space' && !spaceHeld.current) {
+        e.preventDefault()
+        spaceHeld.current = true
+        canvas!.style.cursor = 'grab'
+      }
+    }
+    function onKeyUp(e: KeyboardEvent) {
+      if (e.code === 'Space') {
+        spaceHeld.current = false
+        canvas!.style.cursor = 'crosshair'
+      }
+    }
+
     canvas.addEventListener('mousedown', onMouseDown)
     canvas.addEventListener('mousemove', onMouseMove)
-    canvas.addEventListener('mouseup', onMouseUp)
+    window.addEventListener('mouseup', onMouseUp)
     canvas.addEventListener('contextmenu', onContextMenu)
     canvas.addEventListener('dragover', onDragOver)
     canvas.addEventListener('drop', onDrop)
+    canvas.addEventListener('wheel', onWheel, { passive: false })
+    window.addEventListener('keydown', onKeyDown)
+    window.addEventListener('keyup', onKeyUp)
 
     return () => {
       canvas.removeEventListener('mousedown', onMouseDown)
       canvas.removeEventListener('mousemove', onMouseMove)
-      canvas.removeEventListener('mouseup', onMouseUp)
+      window.removeEventListener('mouseup', onMouseUp)
       canvas.removeEventListener('contextmenu', onContextMenu)
       canvas.removeEventListener('dragover', onDragOver)
       canvas.removeEventListener('drop', onDrop)
+      canvas.removeEventListener('wheel', onWheel)
+      window.removeEventListener('keydown', onKeyDown)
+      window.removeEventListener('keyup', onKeyUp)
     }
-  }, [])
+  }, [zoom, panX, panY])
 
   const selectedComp = selectedCompIndex >= 0 ? components[selectedCompIndex] : null
   const selectedDef = selectedComp ? GUI_COMP_DEFS[selectedComp.type] : null
@@ -513,13 +745,16 @@ export function GuiBuilder() {
 
       {/* Canvas + info panel */}
       <div className="flex-1 flex overflow-hidden bg-[#0a0a1a]">
-        <div className="flex-1 flex items-center justify-center">
+        <div ref={containerRef} className="flex-1 overflow-hidden flex items-center justify-center" style={{ cursor: panning.current ? 'grabbing' : 'crosshair' }}>
           <canvas
             ref={canvasRef}
-            width={GUI_W * SCALE}
-            height={GUI_H * SCALE}
-            style={{ width: GUI_W * SCALE, height: GUI_H * SCALE, imageRendering: 'pixelated', fontSmooth: 'never', WebkitFontSmoothing: 'none' } as React.CSSProperties}
-            className="border border-border cursor-crosshair"
+            style={{
+              imageRendering: 'pixelated',
+              fontSmooth: 'never',
+              WebkitFontSmoothing: 'none',
+              transform: `translate(${panX}px, ${panY}px)`,
+            } as React.CSSProperties}
+            className="border border-border shrink-0"
           />
         </div>
 
@@ -528,9 +763,9 @@ export function GuiBuilder() {
             <CardTitle>Component</CardTitle>
             <p className="text-xs">Type: <span className="font-bold text-foreground">{selectedDef.label}</span></p>
             <div className="flex gap-1.5">
-              <div><Label>X</Label><Input type="number" value={selectedComp.x} min={0} max={GUI_W - 1}
+              <div><Label>X</Label><Input type="number" value={selectedComp.x}
                 onChange={(e) => useStore.getState().updateGuiComponent(selectedCompIndex, { x: +e.target.value })} /></div>
-              <div><Label>Y</Label><Input type="number" value={selectedComp.y} min={0} max={GUI_H - 1}
+              <div><Label>Y</Label><Input type="number" value={selectedComp.y}
                 onChange={(e) => useStore.getState().updateGuiComponent(selectedCompIndex, { y: +e.target.value })} /></div>
             </div>
             {selectedDef.resizable && (
@@ -549,6 +784,32 @@ export function GuiBuilder() {
                   <option value="input">Input</option>
                   <option value="output">Output</option>
                   <option value="fuel">Fuel</option>
+                </Select>
+              </>
+            )}
+            {(selectedComp.type === 'scrollbar_tab' || selectedComp.type === 'scrollbar_tab_left') && (
+              <>
+                <Label>Side</Label>
+                <Select value={selectedComp.type === 'scrollbar_tab_left' ? 'left' : 'right'}
+                  onChange={(e) => {
+                    const newType = e.target.value === 'left' ? 'scrollbar_tab_left' : 'scrollbar_tab'
+                    useStore.getState().updateGuiComponent(selectedCompIndex, { type: newType as GuiComponentType })
+                  }}>
+                  <option value="right">Right</option>
+                  <option value="left">Left</option>
+                </Select>
+              </>
+            )}
+            {(selectedComp.type === 'search_box' || selectedComp.type === 'search_box_light') && (
+              <>
+                <Label>Variant</Label>
+                <Select value={selectedComp.type === 'search_box_light' ? 'default' : 'dark'}
+                  onChange={(e) => {
+                    const newType = e.target.value === 'default' ? 'search_box_light' : 'search_box'
+                    useStore.getState().updateGuiComponent(selectedCompIndex, { type: newType as GuiComponentType })
+                  }}>
+                  <option value="default">Default</option>
+                  <option value="dark">Dark</option>
                 </Select>
               </>
             )}

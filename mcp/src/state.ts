@@ -183,8 +183,8 @@ export function addGuiComponent(type: GuiComponentType, x: number, y: number, ex
   const gh = state.guiHeight || DEFAULT_GUI_H;
   const comp: GuiComponent = {
     type,
-    x: Math.max(3, Math.min(gw - (extra?.w || def.w) - 3, x)),
-    y: Math.max(3, Math.min(gh - (extra?.h || def.h) - 3, y)),
+    x: Math.round(x),
+    y: Math.round(y),
     w: extra?.w || def.w,
     h: extra?.h || def.h,
     slotType: extra?.slotType || def.slotType || null,
@@ -434,8 +434,8 @@ export function updateGuiComponent(index: number, opts: {
   const comp = state.guiComponents[index];
   const gw = state.guiWidth || DEFAULT_GUI_W;
   const gh = state.guiHeight || DEFAULT_GUI_H;
-  if (opts.x !== undefined) comp.x = Math.max(3, Math.min(gw - comp.w - 3, opts.x));
-  if (opts.y !== undefined) comp.y = Math.max(3, Math.min(gh - comp.h - 3, opts.y));
+  if (opts.x !== undefined) comp.x = Math.round(opts.x);
+  if (opts.y !== undefined) comp.y = Math.round(opts.y);
   if (opts.w !== undefined) comp.w = opts.w;
   if (opts.h !== undefined) comp.h = opts.h;
   if (opts.slotType !== undefined) comp.slotType = opts.slotType;

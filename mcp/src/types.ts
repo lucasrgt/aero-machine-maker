@@ -11,7 +11,8 @@ export type ArrowDirection = 'right' | 'left' | 'up' | 'down';
 
 export type GuiComponentType =
   | 'slot' | 'big_slot' | 'energy_bar' | 'progress_arrow'
-  | 'flame' | 'fluid_tank' | 'gas_tank' | 'fluid_tank_small' | 'gas_tank_small' | 'separator';
+  | 'flame' | 'fluid_tank' | 'gas_tank' | 'fluid_tank_small' | 'gas_tank_small' | 'separator'
+  | 'search_box' | 'search_box_light' | 'scrollbar' | 'scrollbar_tab' | 'scrollbar_tab_left';
 
 export const GUI_COMP_DEFS: Record<GuiComponentType, { w: number; h: number; slotType?: SlotType; ioMode: IoMode }> = {
   slot:           { w: 18, h: 18, slotType: 'input', ioMode: 'input' },
@@ -24,6 +25,11 @@ export const GUI_COMP_DEFS: Record<GuiComponentType, { w: number; h: number; slo
   fluid_tank_small: { w: 18, h: 27, ioMode: 'input' },
   gas_tank_small:   { w: 18, h: 27, ioMode: 'input' },
   separator:        { w: 162, h: 2, ioMode: 'display' },
+  search_box:       { w: 88, h: 12, ioMode: 'display' },
+  search_box_light: { w: 88, h: 12, ioMode: 'display' },
+  scrollbar:        { w: 6, h: 108, ioMode: 'display' },
+  scrollbar_tab:    { w: 22, h: 108, ioMode: 'display' },
+  scrollbar_tab_left: { w: 22, h: 108, ioMode: 'display' },
 };
 
 export interface BlockDef {

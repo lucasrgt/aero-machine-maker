@@ -298,7 +298,7 @@ server.tool(
   {
     preset: z.enum(['processor', 'triple_processor', 'dual_input', 'generator', 'pump', 'fluid_to_gas', 'single_slot', 'tank', 'fluid_processor', 'none']).default('none').describe('Load a preset layout based on real mod machines'),
     components: z.array(z.object({
-      type: z.enum(['slot', 'big_slot', 'energy_bar', 'progress_arrow', 'flame', 'fluid_tank', 'gas_tank', 'fluid_tank_small', 'gas_tank_small', 'separator']),
+      type: z.enum(['slot', 'big_slot', 'energy_bar', 'progress_arrow', 'flame', 'fluid_tank', 'gas_tank', 'fluid_tank_small', 'gas_tank_small', 'separator', 'search_box', 'search_box_light', 'scrollbar', 'scrollbar_tab', 'scrollbar_tab_left']),
       x: z.number().int().min(0).max(255).describe('X position (0 to guiWidth-1)'),
       y: z.number().int().min(0).max(255).describe('Y position (0 to guiHeight-1)'),
       w: z.number().int().optional().describe('Width override (for resizable components)'),
@@ -602,8 +602,8 @@ server.tool(
   'Move, resize, or change a GUI component by index. Use get_state to see indices.',
   {
     index: z.number().int().min(0).describe('Component index to update'),
-    x: z.number().int().min(0).max(175).optional().describe('New X position'),
-    y: z.number().int().min(0).max(165).optional().describe('New Y position'),
+    x: z.number().int().min(-50).max(255).optional().describe('New X position'),
+    y: z.number().int().min(-50).max(255).optional().describe('New Y position'),
     w: z.number().int().optional().describe('New width (resizable components only)'),
     h: z.number().int().optional().describe('New height (resizable components only)'),
     slotType: z.enum(['input', 'output', 'fuel']).optional().describe('Slot role (slot/big_slot only)'),
