@@ -22,4 +22,6 @@ contextBridge.exposeInMainWorld('api', {
   onMcpWsStatus: (callback: (connected: boolean) => void) => {
     ipcRenderer.on('mcp-ws-status', (_event: any, connected: boolean) => callback(connected))
   },
+  // Send state from app to MCP (bidirectional sync)
+  sendToMcp: (msg: any) => ipcRenderer.send('mcp-ws-send', msg),
 })

@@ -48,7 +48,7 @@ export function generateAllFiles(): GeneratedFile[] {
   files.push({
     name: `${PREFIX}Gui${name}.java`,
     relativePath: `src/retronism/gui/${PREFIX}Gui${name}.java`,
-    content: genGui(json, name, hasEnergy, hasFluid, hasGas),
+    content: genGui(json, name, hasEnergy, hasFluid, hasGas, state),
   });
 
   // 6. Output Slot
@@ -785,8 +785,8 @@ function genContainer(
   const outputSlots = slotInfo.outputs.length;
   const guiW = json.guiWidth || 176;
   const guiH = json.guiHeight || 166;
-  const invX = Math.floor((guiW - 162) / 2);  // 162 = 9 slots × 18px, centered
-  const invY = guiH - 83;  // 83px from bottom edge
+  const invX = Math.floor((guiW - 162) / 2) + 1;  // 162 = 9 slots × 18px, centered + 1px slot border offset
+  const invY = guiH - 83 + 1;  // 83px from bottom edge + 1px slot border offset
 
   let slotCode = '';
   let slotIdx = 0;
@@ -883,6 +883,7 @@ ${syncReceive}
 function genGui(
   json: SerializedMultiblock, name: string,
   hasEnergy: boolean, hasFluid: boolean, hasGas: boolean,
+  state: ReturnType<typeof getState>,
 ): string {
   const textureName = `retronism_${name.toLowerCase()}`;
   let overlayCode = '';
@@ -996,6 +997,94 @@ function genGui(
         }`;
   }
 
+  // Generate external component rendering code (components outside panel boundaries)
+  const guiW = json.guiWidth || 176;
+  const guiH = json.guiHeight || 166;
+  let externalCode = '';
+
+  for (const comp of state.guiComponents) {
+    if (comp.type === 'scrollbar_tab' || comp.type === 'scrollbar_tab_left') {
+      const isRight = comp.type === 'scrollbar_tab';
+      const cx = comp.x, cy = comp.y, cw = comp.w, ch = comp.h;
+      externalCode += `
+        // Scrollbar tab (${isRight ? 'right' : 'left'}) — rendered via drawRect (outside texture bounds)
+        {
+            int tx = x + ${cx}, ty = y + ${cy}, tw = ${cw}, th = ${ch};
+            int tr = tx + tw - 1, tb = ty + th - 1;
+${isRight ? `
+            // Right tab: left edge open, corners on right
+            // Top rows
+            for (int px = tx + 2; px <= tr - 3; px++) drawRect(px, ty, px + 1, ty + 1, 0xFF000000);
+            drawRect(tx + 1, ty + 1, tr - 2, ty + 2, 0xFFFFFFFF);
+            drawRect(tr - 2, ty + 1, tr - 1, ty + 2, 0xFF000000);
+            drawRect(tx + 1, ty + 2, tr - 2, ty + 3, 0xFFFFFFFF);
+            drawRect(tr - 2, ty + 2, tr - 1, ty + 3, 0xFFC6C6C6);
+            drawRect(tr - 1, ty + 2, tr, ty + 3, 0xFF000000);
+            // Row 3: BG with DK DK BK on right
+            drawRect(tx, ty + 3, tr - 2, ty + 4, 0xFFC6C6C6);
+            drawRect(tr - 2, ty + 3, tr - 1, ty + 4, 0xFF555555);
+            drawRect(tr - 1, ty + 3, tr, ty + 4, 0xFF555555);
+            drawRect(tr, ty + 3, tr + 1, ty + 4, 0xFF000000);
+            // Middle rows
+            for (int py = ty + 4; py <= tb - 4; py++) {
+                drawRect(tx, py, tr - 2, py + 1, 0xFFC6C6C6);
+                drawRect(tr - 2, py, tr - 1, py + 1, 0xFF555555);
+                drawRect(tr - 1, py, tr, py + 1, 0xFF555555);
+                drawRect(tr, py, tr + 1, py + 1, 0xFF000000);
+            }
+            // Bottom rows
+            drawRect(tx, tb - 3, tr - 3, tb - 2, 0xFFC6C6C6);
+            drawRect(tr - 3, tb - 3, tr - 2, tb - 2, 0xFF555555);
+            drawRect(tr - 2, tb - 3, tr - 1, tb - 2, 0xFF555555);
+            drawRect(tr - 1, tb - 3, tr, tb - 2, 0xFF555555);
+            drawRect(tr, tb - 3, tr + 1, tb - 2, 0xFF000000);
+            for (int px = tx + 1; px <= tr - 1; px++) drawRect(px, tb - 2, px + 1, tb - 1, 0xFF555555);
+            drawRect(tr, tb - 2, tr + 1, tb - 1, 0xFF000000);
+            for (int px = tx + 2; px <= tr - 2; px++) drawRect(px, tb - 1, px + 1, tb, 0xFF555555);
+            drawRect(tr - 1, tb - 1, tr, tb, 0xFF000000);
+            for (int px = tx + 3; px <= tr - 2; px++) drawRect(px, tb, px + 1, tb + 1, 0xFF000000);
+` : `
+            // Left tab: right edge open, corners on left
+            for (int px = tx + 3; px <= tr - 2; px++) drawRect(px, ty, px + 1, ty + 1, 0xFF000000);
+            drawRect(tx + 2, ty + 1, tx + 3, ty + 2, 0xFF000000);
+            for (int px = tx + 3; px <= tr; px++) drawRect(px, ty + 1, px + 1, ty + 2, 0xFFFFFFFF);
+            drawRect(tx + 1, ty + 2, tx + 2, ty + 3, 0xFF000000);
+            for (int px = tx + 2; px <= tr + 1; px++) drawRect(px, ty + 2, px + 1, ty + 3, 0xFFFFFFFF);
+            drawRect(tx, ty + 3, tx + 1, ty + 4, 0xFF000000);
+            drawRect(tx + 1, ty + 3, tx + 2, ty + 4, 0xFFFFFFFF);
+            drawRect(tx + 2, ty + 3, tx + 3, ty + 4, 0xFFFFFFFF);
+            drawRect(tx + 3, ty + 3, tx + 4, ty + 4, 0xFFFFFFFF);
+            for (int px = tx + 4; px <= tr + 1; px++) drawRect(px, ty + 3, px + 1, ty + 4, 0xFFC6C6C6);
+            for (int py = ty + 4; py <= tb - 4; py++) {
+                drawRect(tx, py, tx + 1, py + 1, 0xFF000000);
+                drawRect(tx + 1, py, tx + 2, py + 1, 0xFFFFFFFF);
+                drawRect(tx + 2, py, tx + 3, py + 1, 0xFFFFFFFF);
+                for (int px = tx + 3; px <= tr + 1; px++) drawRect(px, py, px + 1, py + 1, 0xFFC6C6C6);
+            }
+            drawRect(tx, tb - 3, tx + 1, tb - 2, 0xFF000000);
+            drawRect(tx + 1, tb - 3, tx + 2, tb - 2, 0xFFFFFFFF);
+            drawRect(tx + 2, tb - 3, tx + 3, tb - 2, 0xFFFFFFFF);
+            for (int px = tx + 3; px <= tr + 1; px++) drawRect(px, tb - 3, px + 1, tb - 2, 0xFFC6C6C6);
+            drawRect(tx + 1, tb - 2, tx + 2, tb - 1, 0xFF000000);
+            drawRect(tx + 2, tb - 2, tx + 3, tb - 1, 0xFFC6C6C6);
+            for (int px = tx + 3; px <= tr; px++) drawRect(px, tb - 2, px + 1, tb - 1, 0xFF555555);
+            drawRect(tx + 2, tb - 1, tx + 3, tb, 0xFF000000);
+            for (int px = tx + 3; px <= tr - 1; px++) drawRect(px, tb - 1, px + 1, tb, 0xFF555555);
+            for (int px = tx + 3; px <= tr - 2; px++) drawRect(px, tb, px + 1, tb + 1, 0xFF000000);
+`}
+            // Inner track
+            int itx = tx + ${isRight ? 3 : 4}, ity = ty + 4;
+            int itw = tw - ${isRight ? 7 : 7}, ith = th - 8;
+            drawRect(itx, ity, itx + itw - 1, ity + 1, 0xFF373737);
+            drawRect(itx, ity, itx + 1, ity + ith - 1, 0xFF373737);
+            drawRect(itx, ity + ith - 1, itx + itw, ity + ith, 0xFFFFFFFF);
+            drawRect(itx + itw - 1, ity, itx + itw, ity + ith, 0xFFFFFFFF);
+            drawRect(itx + 1, ity + 1, itx + itw - 1, ity + ith - 1, 0xFF8B8B8B);
+        }
+`;
+    }
+  }
+
   return `package retronism.gui;
 
 import net.minecraft.src.*;
@@ -1013,8 +1102,8 @@ public class ${PREFIX}Gui${name} extends GuiContainer {
     public ${PREFIX}Gui${name}(InventoryPlayer playerInv, ${PREFIX}Tile${name} tile) {
         super(new ${PREFIX}Container${name}(playerInv, tile));
         this.tile = tile;
-        this.xSize = ${json.guiWidth || 176};
-        this.ySize = ${json.guiHeight || 166};
+        this.xSize = ${guiW};
+        this.ySize = ${guiH};
     }
 
     @Override
@@ -1027,7 +1116,7 @@ public class ${PREFIX}Gui${name} extends GuiContainer {
     @Override
     protected void drawGuiContainerForegroundLayer() {
         fontRenderer.drawString("${name}", (xSize - fontRenderer.getStringWidth("${name}")) / 2, 6, 4210752);
-        fontRenderer.drawString("Inventory", ${Math.floor(((json.guiWidth || 176) - 162) / 2)}, ySize - 96 + 2, 4210752);
+        fontRenderer.drawString("Inventory", ${Math.floor((guiW - 162) / 2)}, ySize - 96 + 2, 4210752);
 
         if (!tile.isFormed) {
             fontRenderer.drawString("Structure incomplete!", 8, 20, 0xFF4444);
@@ -1060,7 +1149,7 @@ ${tooltipChecks}
         int x = (width - xSize) / 2;
         int y = (height - ySize) / 2;
         this.drawTexturedModalRect(x, y, 0, 0, xSize, ySize);
-${overlayCode}
+${overlayCode}${externalCode}
     }
 }
 `;

@@ -97,6 +97,19 @@ let mcpClients: Set<any> = new Set()
 let pendingWsMessages: any[] = []
 let webContentsReady = false
 
+// Broadcast message from app to all connected MCP clients
+function broadcastToMcp(msg: any): void {
+  const data = JSON.stringify(msg)
+  for (const client of mcpClients) {
+    try { client.send(data) } catch (_: any) {}
+  }
+}
+
+// Listen for state updates from renderer → broadcast to MCP
+ipcMain.on('mcp-ws-send', (_event: any, msg: any) => {
+  broadcastToMcp(msg)
+})
+
 function sendToRenderer(channel: string, ...args: any[]) {
   if (!mainWindow || mainWindow.isDestroyed()) return
   if (webContentsReady) {

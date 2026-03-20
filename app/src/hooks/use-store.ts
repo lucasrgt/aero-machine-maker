@@ -1090,3 +1090,17 @@ export const useStore = create<MultiblockStore>((set, get) => ({
     }
   },
 }))
+
+// Bidirectional sync: send state to MCP on every change
+let syncDebounce: ReturnType<typeof setTimeout> | null = null
+useStore.subscribe(() => {
+  if (syncDebounce) clearTimeout(syncDebounce)
+  syncDebounce = setTimeout(() => {
+    const api = (window as any).api
+    if (!api?.sendToMcp) return
+    try {
+      const serialized = useStore.getState().serialize()
+      api.sendToMcp({ type: 'state', payload: serialized })
+    } catch (_) {}
+  }, 100)
+})

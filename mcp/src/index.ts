@@ -70,9 +70,13 @@ function syncStateToFile(): void {
   } catch (_) {}
 }
 
+// Suppress flag to prevent infinite sync loop (app → MCP → app → ...)
+let suppressSync = false;
+
 // Register change listener — send via WebSocket + write file
 // Change listener fires from MCP tool calls, so mark as tool call
 setOnChangeListener(() => {
+  if (suppressSync) return;
   syncStateViaWs(true);
   syncStateToFile();
 });
@@ -90,6 +94,19 @@ function connectToModMaker(): void {
       wsConnection = ws;
       // Send current state on connect — NOT a tool call, so won't overwrite user-loaded projects
       syncStateViaWs(false);
+    });
+
+    ws.on('message', (data: any) => {
+      // Receive state updates from Electron app (bidirectional sync)
+      try {
+        const msg = JSON.parse(data.toString());
+        if (msg.type === 'state' && msg.payload) {
+          // Suppress onChange to avoid infinite sync loop
+          suppressSync = true;
+          deserialize(msg.payload);
+          suppressSync = false;
+        }
+      } catch (_) { suppressSync = false; }
     });
 
     ws.on('close', () => {

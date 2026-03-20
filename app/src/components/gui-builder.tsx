@@ -441,7 +441,7 @@ export function GuiBuilder() {
           hLine(bx, by + bh - 1, bw, MC.WH); vLine(bx + bw - 1, by, bh, MC.WH)
           pixel(bx + bw - 1, by, MC.SL)
           fill(bx + 1, by + 1, bw - 2, bh - 2, MC.BK)
-          ctx.fillStyle = '#666'; ctx.font = `${7 * s}px Monocraft, Consolas`; ctx.fillText('Search...', (bx + 3) * s, (by + 2) * s)
+          ctx.fillStyle = '#666'; ctx.font = `${7 * s}px Monocraft, Consolas`; ctx.fillText('Search...', (bx + 3) * s, (by + 1) * s)
           break
         }
         case 'search_box_light': {
@@ -450,7 +450,7 @@ export function GuiBuilder() {
           hLine(bx2, by2 + bh2 - 1, bw2, MC.WH); vLine(bx2 + bw2 - 1, by2, bh2, MC.WH)
           pixel(bx2 + bw2 - 1, by2, MC.SL)
           fill(bx2 + 1, by2 + 1, bw2 - 2, bh2 - 2, [96, 96, 96] as Color)
-          ctx.fillStyle = '#fff'; ctx.font = `${7 * s}px Monocraft, Consolas`; ctx.fillText('Search...', (bx2 + 3) * s, (by2 + 2) * s)
+          ctx.fillStyle = '#fff'; ctx.font = `${7 * s}px Monocraft, Consolas`; ctx.fillText('Search...', (bx2 + 3) * s, (by2 + 1) * s)
           break
         }
         case 'scrollbar': {
